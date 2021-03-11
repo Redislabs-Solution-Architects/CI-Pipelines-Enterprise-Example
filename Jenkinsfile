@@ -9,7 +9,7 @@ pipeline {
 				credentialsId: 'redis-cluster-creds',
 				usernameVariable: 'REDIS_USERNAME',
 			passwordVariable: 'REDIS_PASSWORD')]) {
-                	sh '/mnt/host_machine/tools/mkdb-byname.py --redis-host ${params.cluster} --password $REDIS_PASSWORD --username $REDIS_USERNAME --db-name jenkins${BUILD_NUMBER} --memory-size 107374182 --shard-count 2 --db-password jenkinstest --replication --db-port 12113'
+                	sh '/mnt/host_machine/tools/mkdb-byname.py --redis-host ${cluster} --password $REDIS_PASSWORD --username $REDIS_USERNAME --db-name jenkins${BUILD_NUMBER} --memory-size 107374182 --shard-count 2 --db-password jenkinstest --replication --db-port 12113'
                      }
                 }
             }
@@ -37,7 +37,7 @@ pipeline {
 				credentialsId: 'redis-cluster-creds',
 				usernameVariable: 'REDIS_USERNAME',
 			passwordVariable: 'REDIS_PASSWORD')]) {
-                	sh '/mnt/host_machine/tools/dbstats-byname.py --redis-host ${params.cluster} --password $REDIS_PASSWORD --username $REDIS_USERNAME --db-name jenkins${BUILD_NUMBER}'
+                	sh '/mnt/host_machine/tools/dbstats-byname.py --redis-host ${cluster} --password $REDIS_PASSWORD --username $REDIS_USERNAME --db-name jenkins${BUILD_NUMBER}'
                      }
                 }
             }
@@ -54,7 +54,7 @@ pipeline {
                     	credentialsId: 'redis-cluster-creds',
                     	usernameVariable: 'REDIS_USERNAME',
                     passwordVariable: 'REDIS_PASSWORD')]) {
-              	sh '/mnt/host_machine/tools/rmdb-byname.py --redis-host ${params.cluster} --password $REDIS_PASSWORD --username $REDIS_USERNAME --db-name jenkins${BUILD_NUMBER} '
+              	sh '/mnt/host_machine/tools/rmdb-byname.py --redis-host ${cluster} --password $REDIS_PASSWORD --username $REDIS_USERNAME --db-name jenkins${BUILD_NUMBER} '
                    }
               }
           }
