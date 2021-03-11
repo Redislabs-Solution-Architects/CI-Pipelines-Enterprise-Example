@@ -1,7 +1,7 @@
 pipeline {
     agent any
     stages {
-        stage('Deploy') {
+        stage('Create Remote Databse') {
             steps {
                 script {
                     withCredentials(
@@ -9,27 +9,27 @@ pipeline {
 				credentialsId: 'redis-cluster-creds',
 				usernameVariable: 'REDIS_USERNAME',
 			passwordVariable: 'REDIS_PASSWORD')]) {
-                	sh '/mnt/host_machine/tools/mkdb-byname.py --redis-host mague.demo-azure.redislabs.com --password $REDIS_PASSWORD --username $REDIS_USERNAME --db-name jenkins${BUILD_NUMBER} --memory-size 107374182 --shard-count 2 --db-password jenkinstest --replication --db-port 12113'
+                	sh '/mnt/host_machine/tools/mkdb-byname.py --redis-host ${cluster} --password $REDIS_PASSWORD --username $REDIS_USERNAME --db-name jenkins${BUILD_NUMBER} --memory-size 107374182 --shard-count 2 --db-password jenkinstest --replication --db-port 12113'
                      }
                 }
             }
         }
-        stage('Wait for Redis') {
+        stage('Wait for DB to activate') {
             steps {
-		sh 'sleep 30'
+		sh 'sleep 20'
             }
         }
-        stage('Redis Info') {
+        stage('Collect DB Redis Info') {
             steps {
-		sh 'redis-cli -h redis-12113.mague.demo-azure.redislabs.com -p 12113 -a jenkinstest INFO SERVER'
+		sh 'redis-cli -h redis-12113.${cluster} -p 12113 -a jenkinstest INFO SERVER'
             }
         }
-        stage('Memtier Benchmark') {
+        stage('Run Memtier Benchmark') {
             steps {
-		sh 'memtier_benchmark --ratio=1:4 --test-time=60 -d 100 -t 10 -c 5 --pipeline=20 --hide-histogram --key-pattern=S:S -x 2  -s redis-12113.mague.demo-azure.redislabs.com -p 12113 -a jenkinstest'
+		sh 'memtier_benchmark --ratio=1:4 --test-time=60 -d 100 -t 10 -c 5 --pipeline=20 --hide-histogram --key-pattern=S:S -x 2  -s redis-12113.${cluster} -p 12113 -a jenkinstest'
             }
         }
-        stage('Download Stats') {
+        stage('Download Server Stats') {
             steps {
                 script {
                     withCredentials(
@@ -37,7 +37,7 @@ pipeline {
 				credentialsId: 'redis-cluster-creds',
 				usernameVariable: 'REDIS_USERNAME',
 			passwordVariable: 'REDIS_PASSWORD')]) {
-                	sh '/mnt/host_machine/tools/dbstats-byname.py --redis-host mague.demo-azure.redislabs.com --password $REDIS_PASSWORD --username $REDIS_USERNAME --db-name jenkins${BUILD_NUMBER}'
+                	sh '/mnt/host_machine/tools/dbstats-byname.py --redis-host ${cluster} --password $REDIS_PASSWORD --username $REDIS_USERNAME --db-name jenkins${BUILD_NUMBER}'
                      }
                 }
             }
@@ -54,7 +54,7 @@ pipeline {
                     	credentialsId: 'redis-cluster-creds',
                     	usernameVariable: 'REDIS_USERNAME',
                     passwordVariable: 'REDIS_PASSWORD')]) {
-              	sh '/mnt/host_machine/tools/rmdb-byname.py --redis-host mague.demo-azure.redislabs.com --password $REDIS_PASSWORD --username $REDIS_USERNAME --db-name jenkins${BUILD_NUMBER} '
+              	sh '/mnt/host_machine/tools/rmdb-byname.py --redis-host ${cluster} --password $REDIS_PASSWORD --username $REDIS_USERNAME --db-name jenkins${BUILD_NUMBER} '
                    }
               }
           }
