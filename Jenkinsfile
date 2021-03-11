@@ -26,7 +26,7 @@ pipeline {
         }
         stage('Memtier Benchmark') {
             steps {
-		sh 'memtier_benchmark --ratio=1:4 --test-time=60 -d 100 -t 10 -c 5 --pipeline=50 --key-pattern=S:S -x 10  -s redis-12113.mague.demo-azure.redislabs.com -p 12113 -a jenkinstest'
+		sh 'memtier_benchmark --ratio=1:4 --test-time=60 -d 100 -t 10 -c 5 --pipeline=50 --key-pattern=S:S -x 2  -s redis-12113.mague.demo-azure.redislabs.com -p 12113 -a jenkinstest'
             }
         }
         stage('Cleanup') {
